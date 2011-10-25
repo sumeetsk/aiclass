@@ -71,20 +71,40 @@ def tinyMazeSearch(problem):
 
 
 class Node:
-    def __init__(self, state, parent, action, cost):
+    def __init__(self, state, parent, action, stepcost):
         self.state  = state
         self.parent = parent
         self.action = action
-        self.cost   = cost
+        if parent==None:
+            self.cost = stepcost
+        else:
+            self.cost = parent.cost + stepcost
 
     def __str__(self):
         return "State: " + str(self.state) + "\n" + \
-               "Parent: " + str(self.parent) + "\n" + \
+               "Parent: " + str(self.parent.state) + "\n" + \
                "Action: " + str(self.action) + "\n" + \
                "Cost: " + str(self.cost)
 
     def getState(self):
         return self.state
+
+    def getAction(self):
+        return self.action
+
+    def pathFromStart(self):
+        stateList = []
+        actionList = []
+        currNode = self
+        while currNode.getAction() is not None:
+            #print stateList
+            #print actionList
+            stateList.append(currNode.getState())
+            actionList.append(currNode.getAction())
+            currNode = currNode.parent
+        actionList.reverse()
+        return actionList
+
 
 
 def depthFirstSearch(problem):
@@ -104,24 +124,30 @@ def depthFirstSearch(problem):
   print "Start's successors:", problem.getSuccessors(problem.getStartState())
   """
 
+  #Queue - BFS
   s = util.Stack()
-  #explored = util.Stack() #check
+  explored = []
   startNode = Node(problem.getStartState(), None, None, 0)
   s.push(startNode)
   actionslist = []
 
   while (not s.isEmpty()):
+  #for i in range(3):
       currNode = s.pop()
+      #explored[currNode.getState()] = 1
+      explored.append(currNode.getState())
+      #print "Currnode", currNode.getState()
       if problem.isGoalState(currNode.getState()):
           print "done"
-          return actionlist
+          return currNode.pathFromStart()
       else:
           successors = problem.getSuccessors(currNode.getState())
-          print len(successors)
-
-      #print problem.getSuccessors(problem.getSuccessors( nextNode.state )[0][0])
-
-  "*** YOUR CODE HERE ***"
+          for item in successors:
+              state = item[0]
+              action = item[1]
+              stepcost = item[2]
+              if state not in explored:
+                  s.push( Node(state, currNode, action, stepcost) )
   util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
@@ -129,7 +155,29 @@ def breadthFirstSearch(problem):
   Search the shallowest nodes in the search tree first.
   [2nd Edition: p 73, 3rd Edition: p 82]
   """
-  "*** YOUR CODE HERE ***"
+  s = util.Queue()
+  explored = []
+  startNode = Node(problem.getStartState(), None, None, 0)
+  s.push(startNode)
+  actionslist = []
+
+  while (not s.isEmpty()):
+  #for i in range(3):
+      currNode = s.pop()
+      #explored[currNode.getState()] = 1
+      explored.append(currNode.getState())
+      #print "Currnode", currNode.getState()
+      if problem.isGoalState(currNode.getState()):
+          print "done"
+          return currNode.pathFromStart()
+      else:
+          successors = problem.getSuccessors(currNode.getState())
+          for item in successors:
+              state = item[0]
+              action = item[1]
+              stepcost = item[2]
+              if state not in explored:
+                  s.push( Node(state, currNode, action, stepcost) )
   util.raiseNotDefined()
       
 def uniformCostSearch(problem):
