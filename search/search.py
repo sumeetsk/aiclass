@@ -89,8 +89,14 @@ class Node:
     def getState(self):
         return self.state
 
+    def getParent(self):
+        return self.parent
+
     def getAction(self):
         return self.action
+
+    def getCost(self):
+        return self.cost
 
     def pathFromStart(self):
         stateList = []
@@ -104,6 +110,7 @@ class Node:
             currNode = currNode.parent
         actionList.reverse()
         return actionList
+
 
 
 
@@ -132,11 +139,8 @@ def depthFirstSearch(problem):
   actionslist = []
 
   while (not s.isEmpty()):
-  #for i in range(3):
       currNode = s.pop()
-      #explored[currNode.getState()] = 1
       explored.append(currNode.getState())
-      #print "Currnode", currNode.getState()
       if problem.isGoalState(currNode.getState()):
           print "done"
           return currNode.pathFromStart()
@@ -180,9 +184,64 @@ def breadthFirstSearch(problem):
                   s.push( Node(state, currNode, action, stepcost) )
   util.raiseNotDefined()
       
+
+class NodeUCS:
+    def __init__(self, state, parent, action):
+        self.state  = state
+        self.parent = parent
+        self.action = action
+        if parent==None:
+            self.actionsToReachNode = []
+        else:
+            t = parent.actionsToReachNode[:]
+            t.append(action)
+            self.actionsToReachNode = t
+
+    def __str__(self):
+        return "State: " + str(self.state) + "\n" + \
+               "Parent: " + str(self.parent.state) + "\n" + \
+               "Action: " + str(self.action) + "\n" + \
+               "Cost: " + str(self.cost)
+
+    def getState(self):
+        return self.state
+
+    def getParent(self):
+        return self.parent
+
+    def getAction(self):
+        return self.action
+
+    def getActionsToReachNode(self):
+        return self.actionsToReachNode
+
+
+
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
-  "*** YOUR CODE HERE ***"
+
+  s = util.PriorityQueue()
+  explored = []
+  startNode = NodeUCS(problem.getStartState(), None, None)
+  s.push(startNode, problem.getCostOfActions(startNode.actionsToReachNode))
+
+  while (not s.isEmpty()):
+  #for i in range(3):
+      currNode = s.pop()
+      explored.append(currNode.getState())
+      if problem.isGoalState(currNode.getState()):
+          print "done"
+          return currNode.getActionsToReachNode()
+      else:
+          successors = problem.getSuccessors(currNode.getState())
+          for item in successors:
+              state = item[0]
+              action = item[1]
+              if state not in explored:
+                  n = NodeUCS(state, currNode, action)
+                  #print "Action sequence: ", n.getActionsToReachNode()
+                  #util.pause()
+                  s.push( n, problem.getCostOfActions(n.getActionsToReachNode() ))
   util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
@@ -195,6 +254,29 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
   "*** YOUR CODE HERE ***"
+
+  s = util.PriorityQueue()
+  explored = []
+  startNode = NodeUCS(problem.getStartState(), None, None)
+  s.push(startNode, problem.getCostOfActions(startNode.actionsToReachNode) + heuristic(startNode.getState(),problem))
+
+  while (not s.isEmpty()):
+  #for i in range(3):
+      currNode = s.pop()
+      explored.append(currNode.getState())
+      if problem.isGoalState(currNode.getState()):
+          print "done"
+          return currNode.getActionsToReachNode()
+      else:
+          successors = problem.getSuccessors(currNode.getState())
+          for item in successors:
+              state = item[0]
+              action = item[1]
+              if state not in explored:
+                  n = NodeUCS(state, currNode, action)
+                  #print "Action sequence: ", n.getActionsToReachNode()
+                  #util.pause()
+                  s.push( n, problem.getCostOfActions(n.getActionsToReachNode() ) + heuristic(n.getState(),problem))
   util.raiseNotDefined()
     
   
